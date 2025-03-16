@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { IndexedDBProvider } from "@/components/IndexedDbProvider"; // Adjust the import path accordingly
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +28,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <IndexedDBProvider>
+          {children}
+          <div id="modal-root"></div>
+        </IndexedDBProvider>
       </body>
     </html>
   );
