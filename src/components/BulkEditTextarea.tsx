@@ -1,73 +1,81 @@
-import { useEffect, useRef, useState } from "react";
-import { useIndexedDB } from "./IndexedDbProvider";
+import { useEffect, useState } from "react";
+import { useIndexedDB } from "../providers/IndexedDbProvider";
+import { useDebounce } from "@/hooks/Debounce";
 import { Album } from "@/app/Album";
 
 export default function BulkEditTextarea() {
-  const { getAllItems, removeAllItems, addItem } = useIndexedDB();
+  const { getAllItems, addItem } = useIndexedDB();
   const [textItems, setTextItems] = useState<string>("");
-  const timeout = useRef<NodeJS.Timeout | null>(null);
-
+  const debounce = useDebounce();
+  // initial load
   useEffect(() => {
-    function debounce(func: () => void, wait = 300) {
-      return function () {
-        if (timeout.current) {
-          clearTimeout(timeout.current);
-        }
-        timeout.current = setTimeout(() => func(), wait);
-      };
-    }
-    const getAllItemsAndUpdateText = async () => {
+    const getAllItemsAndUpdateText = debounce("initalLoadItems", async () => {
       try {
-        console.log("fetching");
         const getItemsResult = await getAllItems();
-        console.log("getItemsResult: ", getItemsResult.length);
         const textItems = getItemsResult.map((item) => item.toString());
         setTextItems(textItems.join("\n"));
-        console.log("fetcedData");
       } catch (error) {
         console.error("Failed to fetch items: ", error);
       }
-    };
-    const debouncedGetAllItemsAndUpdateText = debounce(
-      getAllItemsAndUpdateText
-    );
-    debouncedGetAllItemsAndUpdateText();
-  }, [getAllItems]);
+    });
+    getAllItemsAndUpdateText();
+  }, [getAllItems, debounce]);
 
-  function debounce(func: () => void, wait = 300) {
-    let timeout: NodeJS.Timeout;
-    return function () {
-      if (timeout) {
-        clearTimeout(timeout);
+  // file upload
+  useEffect(() => {
+    const updateAlbums = debounce("fileLoadUpdate", async () => {
+      const getItemsResult = await getAllItems();
+      const textItems = getItemsResult.map((item) => item.toString());
+      setTextItems(textItems.join("\n"));
+    });
+    window.addEventListener("fileUpload", updateAlbums);
+    return () => {
+      window.removeEventListener("fileUpload", updateAlbums);
+    };
+  });
+
+  useEffect(() => {
+    const afterChangeUpdateItems = debounce(
+      "onChangeUpdateItems",
+      async (updatedTextItems: string | null) => {
+        if (!updatedTextItems) return;
+        const previousTexItems = textItems
+          .split("\n")
+          .filter((item) => item.length > 0);
+
+        const updatedLines = updatedTextItems
+          .split("\n")
+          .filter((item) => item);
+        updatedLines
+          .filter((item) => item.match(/\|[0-9]*$/))
+          .filter(
+            (item, index) =>
+              index > previousTexItems.length - 1 ||
+              item.replace(/\s/g, "") !==
+                previousTexItems[index].replace(/\s/g, "")
+          )
+          .map(async (item) => {
+            addItem(Album.fromString(item));
+          });
+
+        await Promise.all(
+          updatedLines
+            .filter((item) => !item.match(/\|[0-9]*$/))
+            .map(async (item) => {
+              const a = Album.fromString(item);
+              console.log(a);
+              return addItem(a);
+            })
+        );
       }
-      timeout = setTimeout(() => func(), wait);
-    };
-  }
-
-  const updateItems = async () => {
-    if (textItems === "") return;
-    await removeAllItems();
-    await Promise.all(
-      textItems.split("\n").map(async (item) => addItem(Album.fromString(item)))
     );
-  };
-
-  // const debouncedUpdateItems = debounce(updateItems);
-  // useEffect(() => {
-  //   debouncedUpdateItems();
-  // }, [textItems, debouncedUpdateItems]);
-
-  // useEffect(() => {
-  //   const updateAlbums = async () => {
-  //     const items = await getAllItems();
-  //     const textItems = items.map((item) => item.toString());
-  //     setTextItems(textItems.join("\n"));
-  //   };
-  //   window.addEventListener("indexedDBUpdate", debounce(updateAlbums));
-  //   return () => {
-  //     window.removeEventListener("indexedDBUpdate", debounce(updateAlbums));
-  //   };
-  // });
+    afterChangeUpdateItems(textItems);
+    window.addEventListener("closeBulkEditView", afterChangeUpdateItems);
+    return window.removeEventListener(
+      "closeBulkEditView",
+      afterChangeUpdateItems
+    );
+  }, [textItems, addItem, debounce]);
 
   function getTitle(title: string) {
     switch (title) {
@@ -86,7 +94,9 @@ export default function BulkEditTextarea() {
       case "Variant":
         return "Variant".padEnd(18);
       case "Image":
-        return "Image".padEnd(80);
+        return "Image".padEnd(436);
+      case "Id":
+        return "Id".padEnd(10);
       default:
         return title;
     }
@@ -106,16 +116,14 @@ export default function BulkEditTextarea() {
           ))}
         </div>
         <textarea
-          className="min-h-[100%] flex-grow resize-none w-full overflow-x-hidden p-4"
-          placeholder="arist                                                                           | album                                                                          | barcode                                  | coutry             | year               | genre              | variant            | image                   "
+          className="min-h-[100%] flex-grow resize-none w-full overflow-x-hidden p-4 whitespace-pre font-mono text-[13px]"
+          placeholder={`arist                                                                           | album                                                                          | barcode                                  | coutry             | year               | genre              | variant            | ${"image".padEnd(
+            500
+          )} | id          `}
           value={textItems}
-          style={{
-            whiteSpace: "pre",
-            fontFamily: "monospace",
+          onChange={(e) => {
+            setTextItems(e.target.value);
           }}
-          // onChange={(e) => {
-          //   setTextItems(e.target.value);
-          // }}
         />
       </div>
     </div>
