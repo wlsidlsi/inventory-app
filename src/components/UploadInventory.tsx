@@ -1,4 +1,5 @@
 import { useIndexedDB } from "./IndexedDbProvider";
+import { Album } from "@/app/Album";
 
 export default function UploadInventory() {
   const { addItem } = useIndexedDB();
@@ -19,7 +20,7 @@ export default function UploadInventory() {
               variant: cols[6] && cols[6].trim(),
               image: cols[7] && cols[7].trim()
           };
-          return addItem(album);
+          return addItem(new Album(album));
       }));
     }
   return (
