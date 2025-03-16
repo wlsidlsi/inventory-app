@@ -10,19 +10,19 @@ import { PopupProvider } from "@/components/PopupProvider";
 export default function Home() {
   const [albums, setAlbums] = useState<Album[]>([]);
 
-  const { getAllAlbums } = useIndexedDB();
+  const { getAllItems } = useIndexedDB();
 
   useEffect(() => {
-    async function fetchAlbums() {
-      const albums = await getAllAlbums();
+    async function fetchAllItems() {
+      const albums = await getAllItems();
       setAlbums(albums);
     }
-    fetchAlbums();
-  }, [getAllAlbums]);
+    fetchAllItems();
+  }, [getAllItems]);
 
   useEffect(() => {
     const updateAlbums = async () => {
-      const albums = await getAllAlbums();
+      const albums = await getAllItems();
       setAlbums(albums);
     };
     window.addEventListener("indexedDBUpdate", updateAlbums);
