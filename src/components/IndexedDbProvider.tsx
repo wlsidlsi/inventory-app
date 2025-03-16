@@ -1,13 +1,11 @@
 "use client";
-import React, {
-  createContext,
-  useContext,
-  useCallback,
-} from "react";
+import React, { createContext, useContext, useCallback } from "react";
 import { Album } from "@/app/Album";
 
 const dispatchDbEvent = (eventType: string) => {
-  window.dispatchEvent(new CustomEvent("indexedDBUpdate", { detail: eventType }));
+  window.dispatchEvent(
+    new CustomEvent("indexedDBUpdate", { detail: eventType })
+  );
 };
 
 // ------------------------------------------------------
@@ -53,7 +51,11 @@ async function openDB(dbName: string, storeName: string, version = 1) {
 }
 
 // Utility function for retrieving store transaction
-async function getTransaction(dbName: string, storeName: string, mode: IDBTransactionMode) {
+async function getTransaction(
+  dbName: string,
+  storeName: string,
+  mode: IDBTransactionMode
+) {
   const db = await openDB(dbName, storeName);
   return db.transaction(storeName, mode).objectStore(storeName);
 }
@@ -61,46 +63,68 @@ async function getTransaction(dbName: string, storeName: string, mode: IDBTransa
 export const IndexedDBProvider: React.FC<IndexedDBProviderProps> = ({
   dbName = "inventory",
   storeName = "albums",
-  children
+  children,
 }) => {
   // Define your CRUD operations as callbacks
-  const addItem = useCallback(async (item: Album): Promise<IDBValidKey> => {
-    const store = await getTransaction(dbName, storeName, "readwrite");
-    return new Promise<IDBValidKey>((resolve, reject) => {
-      const request = store.add(item.toJSON());
-      request.onsuccess = () => {
-        dispatchDbEvent("albumAdded"); // Notify listeners
-        resolve(request.result)
-      };
-      request.onerror = () => reject(request.error);
-    });
-  }, [dbName, storeName]);
+  const addItem = useCallback(
+    async (item: Album): Promise<IDBValidKey> => {
+      const store = await getTransaction(dbName, storeName, "readwrite");
+      return new Promise<IDBValidKey>((resolve, reject) => {
+        if (
+          item.artistName === "" &&
+          item.albumName === "" &&
+          item.barcode === "" &&
+          item.country === "" &&
+          item.genre === "" &&
+          item.year === "" &&
+          item.variant === "" &&
+          item.image === ""
+        ) {
+          return
+        }
+        const request = store.add(item.toJSON());
+        request.onsuccess = () => {
+          dispatchDbEvent("albumAdded"); // Notify listeners
+          resolve(request.result);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    },
+    [dbName, storeName]
+  );
 
-  const getItem = useCallback(async (id: string) => {
-    const store = await getTransaction(dbName, storeName, "readonly");
-    return new Promise<unknown>((resolve, reject) => {
-      const request = store.get(id);
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-  }, [dbName, storeName]);
+  const getItem = useCallback(
+    async (id: string) => {
+      const store = await getTransaction(dbName, storeName, "readonly");
+      return new Promise<unknown>((resolve, reject) => {
+        const request = store.get(id);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    },
+    [dbName, storeName]
+  );
 
-  const removeItem = useCallback(async (id: number): Promise<void> => {
-    const store = await getTransaction(dbName, storeName, "readwrite");
-    return new Promise<void>((resolve, reject) => {
-      const request = store.delete(id);
-      dispatchDbEvent("albumRemoved"); // Notify listeners
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
-  }, [dbName, storeName]);
+  const removeItem = useCallback(
+    async (id: number): Promise<void> => {
+      const store = await getTransaction(dbName, storeName, "readwrite");
+      return new Promise<void>((resolve, reject) => {
+        const request = store.delete(id);
+        dispatchDbEvent("albumRemoved"); // Notify listeners
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    },
+    [dbName, storeName]
+  );
 
   const getAllItems = useCallback(async (): Promise<Album[]> => {
     const store = await getTransaction(dbName, storeName, "readwrite");
     return new Promise((resolve, reject) => {
       const request = store.getAll(); // Fetch all albums
-  
-      request.onsuccess = () => resolve(request.result.map(item => new Album(item)));
+
+      request.onsuccess = () =>
+        resolve(request.result.map((item) => new Album(item)));
       request.onerror = () => reject(request.error);
     });
   }, [dbName, storeName]);
@@ -117,7 +141,9 @@ export const IndexedDBProvider: React.FC<IndexedDBProviderProps> = ({
   }, [dbName, storeName]);
 
   return (
-    <IndexedDBContext.Provider value={{ addItem, getItem, removeItem, getAllItems, removeAllItems }}>
+    <IndexedDBContext.Provider
+      value={{ addItem, getItem, removeItem, getAllItems, removeAllItems }}
+    >
       {children}
     </IndexedDBContext.Provider>
   );
