@@ -53,8 +53,10 @@ input[type="file"] {
 }
 
 input[type="text"] {
+  color: black;
   border-radius: 10px;
   border-width: 0 0 1px 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   font-size: 1.2rem;
   height: 1.8rem;
   padding-block: 0.5rem;
@@ -76,13 +78,16 @@ input[type="text"] {
 }
 
 .card-front {
-  --card-back-background-color: rgba(0, 98, 255, 0.166);
+  --card-back-background-color: rgb(131, 178, 255);
   color: rgba(220, 220, 220, 0.8);
   min-height: 300px;
   background-color: var(--card-back-background-color);
   line-height: 1.8rem;
   padding: 1rem;
   border-radius: 20px;
+  border: white solid 2px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+
   backface-visibility: hidden;
   transform: rotateY(180deg);
   overflow: hidden;
@@ -94,7 +99,7 @@ input[type="text"] {
 }
 
 [data-theme="dark"] .card-front {
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgb(88, 148, 252);
 }
 
 /* Animation classes */
@@ -137,9 +142,10 @@ input[type="text"] {
 }
 
 .card-back {
-  --card-back-background-color: rgba(0, 98, 255, 0.166);
+  --card-back-background-color: rgba(0, 98, 255, 0.5);
   background-color: var(--card-back-background-color);
-  outline: black solid 2px;
+  border: white solid 2px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   line-height: 1.8rem;
   padding: 1rem;
   border-radius: 20px;
@@ -154,15 +160,15 @@ input[type="text"] {
   outline: rgba(0, 0, 58, 0.45) solid 2px;
 }
 
-.card-front.active,
-.card-back.active {
+.card-front.isShown,
+.card-back.isShown {
   outline: black solid 3px;
   outline-offset: 10px;
   border-radius: 25px;
 }
 
-[data-theme="dark"] .card-front.active,
-[data-theme="dark"] .card-back.active {
+[data-theme="dark"] .card-front.isShown,
+[data-theme="dark"] .card-back.isShown {
   outline: rgb(0, 10, 60) solid 3px;
 }
 
@@ -215,9 +221,17 @@ li {
   border-radius: 20px;
 }
 
-.card:nth-child(1):focus-within .card-back,
-.card:nth-child(1):focus-within .card-front {
-  outline: white solid 3px;
+.card {
+  outline: none;
+}
+.card:focus-within > div {
+  outline: rgb(0, 10, 60) solid 3px;
   outline-offset: 10px;
-  border-radius: 25px;
+  border-radius: 20px;
+}
+
+[data-theme="dark"] {
+  .card:focus-within > div {
+    outline: white solid 4px;
+  }
 }
