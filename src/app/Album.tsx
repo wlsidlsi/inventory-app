@@ -11,12 +11,12 @@ export interface AlbumProps {
 }
 
 export class Album implements AlbumProps {
-  private album: AlbumProps;
+  album: AlbumProps = {} as AlbumProps;
 
   constructor(album: AlbumProps | string) {
     if (typeof album === "string") {
       const fields = album.split("|").map((field) => field.trim());
-      this.album = {
+      Object.assign(this.album, {
         artistName: fields[0] || "",
         albumName: fields[1] || "",
         barcode: fields[2] || "",
@@ -25,9 +25,12 @@ export class Album implements AlbumProps {
         genre: fields[5] || "",
         variant: fields[6] || "",
         image: fields[7] || "",
-      };
+      });
+      if (fields[8] != null) {
+        this.album.id = Number(fields[8]);
+      }
     } else if (typeof album === "object") {
-      this.album = album;
+      Object.assign(this.album, album);
     } else {
       throw new Error("Invalid album format");
     }
@@ -114,8 +117,15 @@ export class Album implements AlbumProps {
       `${(this.album.country || "").padEnd(20)}|` +
       `${(this.album.genre || "").padEnd(20)}|` +
       `${(this.album.variant || "").padEnd(20)}|` +
-      `${(this.album.image || "").padEnd(20)}`
+      `${(this.album.image || "").padEnd(20)}|` +
+      `${this.album.id}`
     );
+  }
+
+  compare(album: Album): boolean {
+    return Object.entries(album).every(([key, value]) => {
+      return this.album[key as keyof AlbumProps] === value;
+    });
   }
 
   toJSON(): AlbumProps {
@@ -136,6 +146,7 @@ export class Album implements AlbumProps {
       "Genre",
       "Variant",
       "Image",
+      "Id",
     ];
     return k;
   }
