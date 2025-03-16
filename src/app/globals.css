@@ -7,20 +7,18 @@
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 .sr-only:not(:focus):not(:active) {
-  clip: rect(0 0 0 0); 
+  clip: rect(0 0 0 0);
   clip-path: inset(50%);
   height: 1px;
   overflow: hidden;
   position: absolute;
-  white-space: nowrap; 
+  white-space: nowrap;
   width: 1px;
 }
 
@@ -28,6 +26,7 @@
   margin: 0;
   box-sizing: border-box;
 }
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -63,7 +62,7 @@ input[type="text"] {
 }
 
 .cards {
-  column-gap: .5rem;
+  column-gap: 0.5rem;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   list-style-type: none;
@@ -72,18 +71,15 @@ input[type="text"] {
 }
 
 .card {
- position: relative;
- height: 300px;
+  position: relative;
+  height: 300px;
 }
-/* 
-.card >:focus-within {
-} */
 
 .card-front {
-  color: black;
+  --card-back-background-color: rgba(0, 98, 255, 0.166);
+  color: rgba(220, 220, 220, 0.8);
   min-height: 300px;
-  outline: black solid 5px;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: var(--card-back-background-color);
   line-height: 1.8rem;
   padding: 1rem;
   border-radius: 20px;
@@ -93,10 +89,14 @@ input[type="text"] {
   animation-duration: 1s;
   animation-timing-function: ease-in-out;
   animation-fill-mode: forwards;
+  transition: outline-offset 0.5s;
   position: relative;
-  top: 0;
-  left: 0;
 }
+
+[data-theme="dark"] .card-front {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
 /* Animation classes */
 .card-front.animate-enter {
   animation-name: expand-rotate-back;
@@ -105,6 +105,7 @@ input[type="text"] {
 .card-front.animate-exit {
   animation-name: shrink-rotate;
 }
+
 @keyframes shrink-rotate {
   0% {
     height: 650px;
@@ -119,6 +120,7 @@ input[type="text"] {
     transform: rotateY(180deg);
   }
 }
+
 @keyframes expand-rotate-back {
   0% {
     height: 300px;
@@ -135,23 +137,33 @@ input[type="text"] {
 }
 
 .card-back {
-  background-color: rgba(137, 182, 255);
-  outline: black solid 5px;
+  --card-back-background-color: rgba(0, 98, 255, 0.166);
+  background-color: var(--card-back-background-color);
+  outline: black solid 2px;
   line-height: 1.8rem;
   padding: 1rem;
   border-radius: 20px;
   backface-visibility: hidden;
   transform: rotateY(0);
-  transition: transform 0.5s;
+  transition: transform 0.5s, outline-offset 0.5s;
   height: 100%;
   width: 100%;
-
 }
 
-.card-front.active, .card-back.active {
-  outline: white solid 3px;
+[data-theme="dark"] .card-back {
+  outline: rgba(0, 0, 58, 0.45) solid 2px;
+}
+
+.card-front.active,
+.card-back.active {
+  outline: black solid 3px;
   outline-offset: 10px;
   border-radius: 25px;
+}
+
+[data-theme="dark"] .card-front.active,
+[data-theme="dark"] .card-back.active {
+  outline: rgb(0, 10, 60) solid 3px;
 }
 
 button {
@@ -160,7 +172,19 @@ button {
   border-radius: 0.25rem;
   color: white;
   cursor: pointer;
-  min-width: 50px;
+}
+
+button:hover {
+  background-color: #0075f1;
+}
+
+button:active {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="dark"] button:active {
+  background-color: rgb(0, 30, 160);
+  box-shadow: 4px 4px 5px #444fff;
 }
 
 nav button {
@@ -170,6 +194,7 @@ nav button {
 span {
   white-space: pre;
 }
+
 .modal-overlay {
   background: var(--background);
   left: 0;
@@ -178,7 +203,6 @@ span {
   top: 0;
   width: 100%;
 }
-
 
 .bulk-edit {
   color: black;
@@ -190,12 +214,8 @@ li {
   padding: 1rem;
   border-radius: 20px;
 }
-.card:nth-child(1):focus-within .card-back {
-  outline: white solid 3px;
-  outline-offset: 10px;
-  border-radius: 25px;
-}
 
+.card:nth-child(1):focus-within .card-back,
 .card:nth-child(1):focus-within .card-front {
   outline: white solid 3px;
   outline-offset: 10px;
