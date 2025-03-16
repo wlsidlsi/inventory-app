@@ -19,30 +19,31 @@ export function usePopup() {
     return () => setPopupContent(null);
   }, []);
 
-  const popupElement = popupContent ? (
-    ReactDOM.createPortal(
-      <div className="fixed inset-0 items-center justify-center bg-blue-950 bg-opacity-95 p-10" onClick={e => {e.stopPropagation(); closePopup()}}>
+  const popupElement = popupContent
+    ? ReactDOM.createPortal(
         <div
-          className="flex justify-between px-5 mb-5"
+          className="fixed inset-0 items-center justify-center bg-blue-950 bg-opacity-95 p-10"
+          onClick={(e) => {
+            e.stopPropagation();
+            closePopup();
+          }}
         >
-          <div className="w-[142px]">
-            {popupContent.leftBlock}
+          <div className="flex justify-between px-5 mb-5">
+            <div className="w-[142px]">{popupContent.leftBlock}</div>
+            <div className="w-[42px]">
+              <button className="modal-close px-3 py-1">✖</button>
+            </div>
           </div>
-          <div className="w-[42px]">
-            <button className="modal-close">
-            ✖
-            </button>
+          <div
+            className="h-[90%] mx-5 bg-white rounded-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {popupContent.content}
           </div>
-        </div>
-        <div className="h-[90%] mx-5 bg-white p-4 rounded" onClick={(e) => e.stopPropagation()}>
-          {popupContent.content}
-        </div>
-      </div>,
-      document.querySelector("#modal-root") as Element
-    )
-  ) : (
-    null
-  );
+        </div>,
+        document.querySelector("#modal-root") as Element
+      )
+    : null;
 
   return { showPopup, closePopup, popupElement };
 }
