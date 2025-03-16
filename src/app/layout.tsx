@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { IndexedDBProvider } from "@/components/IndexedDbProvider"; // Adjust the import path accordingly
+import { IndexedDBProvider } from "@/providers/IndexedDbProvider"; // Adjust the import path accordingly
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,7 +15,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Home Inventoryp",
-  description: `Home Inventory is a simple web app to keep track of your home inventory. ${Math.ceil(Math.random() * 100)}`,
+  description: `Home Inventory is a simple web app to keep track of your home inventory. ${Math.ceil(
+    Math.random() * 100
+  )}`,
 };
 
 export default function RootLayout({
