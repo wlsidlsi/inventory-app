@@ -128,14 +128,14 @@ export class Album implements AlbumProps {
 
   static keys(): string[] {
     const k = [
-      "Artist Name".padEnd(80),
-      "Album Name".padEnd(80),
-      "Barcode".padEnd(43),
-      "Year".padEnd(22),
-      "Country".padEnd(22),
-      "Genre".padEnd(20),
-      "Variant".padEnd(20),
-      "Image".padEnd(20),
+      "Artist Name",
+      "Album Name",
+      "Barcode",
+      "Country",
+      "Year",
+      "Genre",
+      "Variant",
+      "Image",
     ];
     return k;
   }
