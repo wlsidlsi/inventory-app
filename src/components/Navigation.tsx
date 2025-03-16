@@ -26,8 +26,8 @@ export default function Navigation({ lastAlbumId }: NavigationProps) {
           ))}
         </div>
         <div className='flex flex-grow md:w-[340px] space-x-4 justify-center lg:justify-end'>
-          <button id="add" onClick={() => addItem(new Album({ artistName: `My album ${Math.random()}` }))}><strong>+</strong></button>
-          <button id="remove" className={lastAlbumId == 0 ? "invisible" : "visible"} onClick={() => lastAlbumId && removeItem(lastAlbumId)}><strong>-</strong></button>    
+          <button id="add" className="min-w-12" onClick={() => addItem(new Album({ artistName: `Arist`, albumName:'Album', barcode: `${Math.random()}`, year: '2025', country: 'usa', genre: 'rock', variant: '', image:''}))}><strong>+</strong></button>
+          <button id="remove" className={ "min-w-12" + (lastAlbumId == 0 ? " invisible" : " visible")} onClick={() => lastAlbumId && removeItem(lastAlbumId)}><strong>-</strong></button> 
           <button id="bulkEdit" className='min-w-[120px] px-4 py-1' onClick={() => showPopup({ content: <BulkEdit />, leftBlock: uploadForm.current })} >Bulk Edit</button>
           <button id="clear" className='px-4 py-1' onClick={() => removeAllItems()}>Clear</button>
         </div>
