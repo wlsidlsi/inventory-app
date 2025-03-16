@@ -1,5 +1,5 @@
 import { useIndexedDB } from "./IndexedDbProvider";
-import { Album } from "@/app/Album";
+import { Album, AlbumProps } from "@/app/Album";
 
 export default function UploadInventory() {
   const { addItem } = useIndexedDB();
@@ -10,10 +10,10 @@ export default function UploadInventory() {
     const lines = text.split('\n');
     await Promise.all(lines.map(async (line) => {
           const cols = line.replace(/\"/g, "").replace(/\ *\|/g, "|").split('|');
-          const album = {
+          const album: AlbumProps = {
               artistName: cols[0] && cols[0].trim(),
               albumName: cols[1] && cols[1].trim(),
-              upc: cols[2] && cols[2].trim(),
+              barcode: cols[2] && cols[2].trim(),
               year: cols[3] && cols[3].trim(),
               country: cols[4] && cols[4].trim(),
               genre: cols[5] && cols[5].trim(),
