@@ -1,6 +1,8 @@
 "use client";
 import React, { createContext, useContext, useCallback } from "react";
-import { Album } from "@/app/Album";
+import { Album, AlbumProps } from "@/app/Album";
+
+let _totalCount = 0;
 
 const dispatchDbEvent = (eventType: string) => {
   window.dispatchEvent(
@@ -12,11 +14,12 @@ const dispatchDbEvent = (eventType: string) => {
 // 1) Create a context type interface
 // ------------------------------------------------------
 interface IndexedDBContextType {
-  addItem: (item: Album) => Promise<IDBValidKey>;
+  addItem: (item: Album) => Promise<Album>;
   getItem: (id: string) => Promise<unknown>;
   removeItem: (id: number) => Promise<void>;
   getAllItems: () => Promise<Album[]>;
   removeAllItems: () => Promise<void>;
+  totalCount: () => number;
 }
 
 // ------------------------------------------------------
@@ -31,6 +34,10 @@ interface IndexedDBProviderProps {
   dbName?: string;
   storeName?: string;
   children: React.ReactNode;
+}
+
+function totalCount(): number {
+  return _totalCount;
 }
 
 // Utility function for opening DB
@@ -67,9 +74,9 @@ export const IndexedDBProvider: React.FC<IndexedDBProviderProps> = ({
 }) => {
   // Define your CRUD operations as callbacks
   const addItem = useCallback(
-    async (item: Album): Promise<IDBValidKey> => {
+    async (item: Album): Promise<Album> => {
       const store = await getTransaction(dbName, storeName, "readwrite");
-      return new Promise<IDBValidKey>((resolve, reject) => {
+      return new Promise<Album>((resolve, reject) => {
         if (
           item.artistName === "" &&
           item.albumName === "" &&
@@ -80,12 +87,19 @@ export const IndexedDBProvider: React.FC<IndexedDBProviderProps> = ({
           item.variant === "" &&
           item.image === ""
         ) {
-          return
+          return;
         }
-        const request = store.add(item.toJSON());
+        const request = item.id
+          ? store.put(item.toJSON())
+          : store.add(item.toJSON());
         request.onsuccess = () => {
           dispatchDbEvent("albumAdded"); // Notify listeners
-          resolve(request.result);
+          resolve(
+            new Album({
+              ...item.album,
+              id: Number(request.result),
+            } as AlbumProps)
+          );
         };
         request.onerror = () => reject(request.error);
       });
@@ -123,8 +137,10 @@ export const IndexedDBProvider: React.FC<IndexedDBProviderProps> = ({
     return new Promise((resolve, reject) => {
       const request = store.getAll(); // Fetch all albums
 
-      request.onsuccess = () =>
-        resolve(request.result.map((item) => new Album(item)));
+      request.onsuccess = () => {
+        _totalCount = request.result.length;
+        return resolve(request.result.map((item) => new Album(item)));
+      };
       request.onerror = () => reject(request.error);
     });
   }, [dbName, storeName]);
@@ -142,7 +158,14 @@ export const IndexedDBProvider: React.FC<IndexedDBProviderProps> = ({
 
   return (
     <IndexedDBContext.Provider
-      value={{ addItem, getItem, removeItem, getAllItems, removeAllItems }}
+      value={{
+        addItem,
+        getItem,
+        removeItem,
+        getAllItems,
+        removeAllItems,
+        totalCount,
+      }}
     >
       {children}
     </IndexedDBContext.Provider>
