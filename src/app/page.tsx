@@ -4,8 +4,8 @@ import Navigation from "@/components/Navigation";
 import Main from "@/components/Main";
 import { useState, useEffect } from "react";
 import { Album } from "./Album";
-import { useIndexedDB } from "@/components/IndexedDbProvider";
-import { PopupProvider } from "@/components/PopupProvider";
+import { useIndexedDB } from "@/providers/IndexedDbProvider";
+import { PopupProvider } from "@/providers/PopupProvider";
 
 export default function Home() {
   const [albums, setAlbums] = useState<Album[]>([]);
