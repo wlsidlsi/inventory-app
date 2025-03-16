@@ -1,3 +1,5 @@
+'use client';
+
 import { Album } from '@/app/Album';
 import { useDebounce } from '@/hooks/Debouce';
 import { useEffect, useRef, useState } from 'react';
@@ -12,7 +14,6 @@ export default function Card({ children, index}: { children: Album, index: numbe
   const debounceFlip = useDebounce(flip, triggeredByCheckbox ? 0 : 500);
 
   const handleCheckboxChange = () => {
-    console.log('test');
     setTriggeredByCheckbox(true);
     setFlipState(p => !p);
     setTimeout(() => {
