@@ -17,7 +17,7 @@ interface IndexedDBContextType {
   addItem: (item: Album) => Promise<IDBValidKey>;
   getItem: (id: string) => Promise<unknown>;
   removeItem: (id: number) => Promise<void>;
-  getAllAlbums: () => Promise<Album[]>;
+  getAllItems: () => Promise<Album[]>;
   removeAllItems: () => Promise<void>;
 }
 
@@ -67,7 +67,7 @@ export const IndexedDBProvider: React.FC<IndexedDBProviderProps> = ({
   const addItem = useCallback(async (item: Album): Promise<IDBValidKey> => {
     const store = await getTransaction(dbName, storeName, "readwrite");
     return new Promise<IDBValidKey>((resolve, reject) => {
-      const request = store.add(item);
+      const request = store.add(item.toJSON());
       request.onsuccess = () => {
         dispatchDbEvent("albumAdded"); // Notify listeners
         resolve(request.result)
@@ -95,12 +95,12 @@ export const IndexedDBProvider: React.FC<IndexedDBProviderProps> = ({
     });
   }, [dbName, storeName]);
 
-  const getAllAlbums = useCallback(async (): Promise<Album[]> => {
+  const getAllItems = useCallback(async (): Promise<Album[]> => {
     const store = await getTransaction(dbName, storeName, "readwrite");
     return new Promise((resolve, reject) => {
       const request = store.getAll(); // Fetch all albums
   
-      request.onsuccess = () => resolve(request.result as Album[]);
+      request.onsuccess = () => resolve(request.result.map(item => new Album(item)));
       request.onerror = () => reject(request.error);
     });
   }, [dbName, storeName]);
@@ -117,7 +117,7 @@ export const IndexedDBProvider: React.FC<IndexedDBProviderProps> = ({
   }, [dbName, storeName]);
 
   return (
-    <IndexedDBContext.Provider value={{ addItem, getItem, removeItem, getAllAlbums, removeAllItems }}>
+    <IndexedDBContext.Provider value={{ addItem, getItem, removeItem, getAllItems, removeAllItems }}>
       {children}
     </IndexedDBContext.Provider>
   );
